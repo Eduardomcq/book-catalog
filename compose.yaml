@@ -1,0 +1,26 @@
+services:
+  book_catalog_database:
+    image: postgres
+    environment:
+      POSTGRES_USER: app_user
+      POSTGRES_DB: app_db
+      POSTGRES_PASSWORD: app_password
+    
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+  
+  book_catalog_app:
+    image: bookcatalog_app
+    build: .
+    entrypoint: ./entrypoint.sh
+    ports:
+     - "8000:8000"
+    depends_on:
+     - "book_catalog_database"
+    environment:
+     DATABASE_URL: 'postgresql+psycopg://app_user:app_password@book_catalog_database:5432/app_db'
+
+volumes:
+  pgdata:
