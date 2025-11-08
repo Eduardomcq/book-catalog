@@ -1,0 +1,32 @@
+# --- 3. Deployment do Banco de Dados (PostgreSQL) ---
+# Define como executar o pod do PostgreSQL.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: book-catalog-database
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: book-catalog-database
+  template:
+    metadata:
+      labels:
+        app: book-catalog-database
+    spec:
+      containers:
+      - name: postgres
+        image: postgres:15 # Você pode especificar uma versão, ex: postgres:15
+        ports:
+        - containerPort: 5432
+        envFrom:
+        - secretRef:
+            name: db-secret # Carrega as variáveis do Secret
+        volumeMounts:
+        - name: pgdata
+          mountPath: /var/lib/postgresql
+      volumes:
+      - name: pgdata
+        persistentVolumeClaim:
+          claimName: db-pvc

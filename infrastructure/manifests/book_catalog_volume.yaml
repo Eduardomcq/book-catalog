@@ -1,0 +1,15 @@
+# --- 2. PersistentVolumeClaim para o Banco de Dados ---
+# Solicita armazenamento persistente para os dados do PostgreSQL.
+# Substitui o volume nomeado 'pgdata' do docker-compose.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: db-pvc
+  namespace: default
+spec:
+  storageClassName: gp2
+  accessModes:
+    - ReadWriteOnce # Padrão para um banco de dados
+  resources:
+    requests:
+      storage: 1Gi # Você pode ajustar este tamanho

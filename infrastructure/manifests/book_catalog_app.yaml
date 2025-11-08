@@ -1,0 +1,49 @@
+# --- 5. Deployment da Aplicação (Book Catalog) ---
+# Define como executar o pod da sua aplicação.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: book-catalog-app
+  namespace: default
+spec:
+  replicas: 1 # Você pode escalar isso mais tarde
+  selector:
+    matchLabels:
+      app: book-catalog-app
+  template:
+    metadata:
+      labels:
+        app: book-catalog-app
+    spec:
+      containers:
+      - name: app
+        # IMPORTANTE: Esta imagem deve existir em um registry (Docker Hub, GCR, etc)
+        # O K8s não faz 'build' como o docker-compose.
+        image: 213504933493.dkr.ecr.us-east-1.amazonaws.com/book_catalog:latest
+        command: ["./entrypoint.sh"]
+        ports:
+        - containerPort: 8000
+        env:
+        # Recriamos a DATABASE_URL de forma segura, usando o Secret
+        # e o nome do Service do K8s.
+        - name: DB_USER
+          valueFrom:
+            secretKeyRef:
+              name: db-secret
+              key: POSTGRES_USER
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: db-secret
+              key: POSTGRES_PASSWORD
+        - name: DB_NAME
+          valueFrom:
+            secretKeyRef:
+              name: db-secret
+              key: POSTGRES_DB
+        - name: DB_HOST
+          value: "book-catalog-database" # Nome do Service do K8s
+        - name: DB_PORT
+          value: "5432"
+        - name: DATABASE_URL
+          value: "postgresql+psycopg://$(DB_USER):$(DB_PASSWORD)@$(DB_HOST):$(DB_PORT)/$(DB_NAME)"
